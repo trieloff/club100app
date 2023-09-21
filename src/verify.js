@@ -9,8 +9,7 @@ export async function verify(
   );
 
   if (!isGithubPR) {
-    onerror('Wrong link buddy, try again 😢');
-    return;
+    return onerror('Wrong link buddy, try again 😢');
   } else if (isGithubPR) {
     // eslint-disable-next-line no-unused-vars
     const [_, owner, repo, pull_number] = isGithubPR;
@@ -27,16 +26,14 @@ export async function verify(
       );
 
       if (!prResponse.ok) {
-        onerror('I could not find that PR. 😢');
-        return;
+        return onerror('I could not find that PR. 😢');
       }
       const prData = await prResponse.json();
 
       const prAuthorId = prData.user.id;
 
       if (!prData.merged) {
-        onreject('This PR has not been merged. 😔');
-        return;
+        return onreject('This PR has not been merged. 😔');
       } else if (prData.merged) {
         const commentsResponse = await fetch(
           `https://api.github.com/repos/${owner}/${repo}/issues/${pull_number}/comments`,
@@ -48,8 +45,7 @@ export async function verify(
           },
         );
         if (!commentsResponse.ok) {
-          onerror('An error occurred while checking your PR. 😭');
-          return;
+          return onerror('An error occurred while checking your PR. 😭');
         }
         const commentsData = await commentsResponse.json();
 
@@ -58,11 +54,11 @@ export async function verify(
         });
 
         if (!verificationComment) {
-          onreject(
+          return onreject(
             'I could not verify that PR. Make sure to include the verification code in the PR comments. 😢',
           );
         } else if (verificationComment.user.id !== prAuthorId) {
-          onreject(
+          return onreject(
             'I could not verify that PR. The verification code comment was not commented by the PR author. Are you sure it is really you? 😢',
           );
         } else if (
@@ -79,12 +75,11 @@ export async function verify(
           });
 
           if (!performance100Comment) {
-            onreject(
+            return onreject(
               "Sorry, couldn't find a performance score of 100. Ask in #aem-chat for help",
             );
-            return;
           } else if (performance100Comment) {
-            onsuccess({
+            return onsuccess({
               prData,
               performance100Comment,
             });
@@ -92,7 +87,7 @@ export async function verify(
         }
       }
     } catch (err) {
-      onerror('An error occurred while checking your PR. 😭');
+      return onerror('An error occurred while checking your PR. 😭');
     }
   }
 }
