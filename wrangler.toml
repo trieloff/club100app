@@ -1,4 +1,4 @@
-name = "awwbot"
+name = "club-100-discord"
 main = "./src/server.js"
 compatibility_date="2023-05-18"
 
