@@ -26,6 +26,11 @@ export async function verify(
       );
 
       if (!prResponse.ok) {
+        console.error(
+          prResponse.url,
+          prResponse.status,
+          await prResponse.json(),
+        );
         return onerror('I could not find that PR. 😢');
       }
       const prData = await prResponse.json();
