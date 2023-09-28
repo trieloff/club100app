@@ -1,3 +1,7 @@
+export function verifyComment(body) {
+  return body.includes('PERFORMANCE-100');
+}
+
 export async function verify(
   url,
   verificationCode,
@@ -9,7 +13,7 @@ export async function verify(
   );
 
   if (!isGithubPR) {
-    return onerror('Wrong link buddy, try again 😢');
+    return onreject('Wrong link buddy, try again 😢');
   } else if (isGithubPR) {
     // eslint-disable-next-line no-unused-vars
     const [_, owner, repo, pull_number] = isGithubPR;
@@ -19,7 +23,7 @@ export async function verify(
         `https://api.github.com/repos/${owner}/${repo}/pulls/${pull_number}`,
         {
           headers: {
-            Authorization: `token ${github_token}`,
+            // Authorization: `token ${github_token}`,
             Accept: 'application/vnd.github.v3+json',
           },
         },
@@ -27,29 +31,38 @@ export async function verify(
 
       if (!prResponse.ok) {
         console.error(
+          'Unable to fetch PR data from GitHub.',
           prResponse.url,
           prResponse.status,
           await prResponse.json(),
         );
-        return onerror('I could not find that PR. 😢');
+        return onreject(
+          'I do not have access to that PR and can only verify PRs in public repos. 🔑',
+        );
       }
       const prData = await prResponse.json();
 
       const prAuthorId = prData.user.id;
-
       if (!prData.merged) {
         return onreject('This PR has not been merged. 😔');
       } else if (prData.merged) {
+        console.log('PR merged, checking for verification comment');
         const commentsResponse = await fetch(
           `https://api.github.com/repos/${owner}/${repo}/issues/${pull_number}/comments`,
           {
             headers: {
-              Authorization: `token ${github_token}`,
+              // Authorization: `token ${github_token}`,
               Accept: 'application/vnd.github.v3+json',
             },
           },
         );
         if (!commentsResponse.ok) {
+          console.error(
+            'Unable to fetch PR comments from GitHub.',
+            commentsResponse.url,
+            commentsResponse.status,
+            await commentsResponse.json(),
+          );
           return onerror('An error occurred while checking your PR. 😭');
         }
         const commentsData = await commentsResponse.json();
@@ -71,13 +84,9 @@ export async function verify(
           verificationComment.user.id === prAuthorId
         ) {
           // searching for the performance score comment
-          const performance100Comment = commentsData.find((comment) => {
-            return (
-              comment.user.id === 43241697 && // helix bot
-              (comment.body.includes('PERFORMANCE-97') || // need to check with Johan why 97 is ok now.
-                comment.body.includes('SCORE-100'))
-            );
-          });
+          const performance100Comment = commentsData
+            .filter(({ user }) => user.id === 43241697) // helix bot
+            .find(({ body }) => verifyComment(body));
 
           if (!performance100Comment) {
             return onreject(
@@ -92,6 +101,7 @@ export async function verify(
         }
       }
     } catch (err) {
+      console.error(err);
       return onerror('An error occurred while checking your PR. 😭');
     }
   }
