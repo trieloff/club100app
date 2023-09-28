@@ -80,7 +80,13 @@ router.post('/', async (request, env) => {
       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
       data: {
         content:
-          'Please add this random string into a PR comment: hte5au4a336a',
+          `In order to join the club, we want to see a a pull request, that
+1. is for an AEM project (Edge Delivery Services)
+2. has a performance score of 100
+3. has been merged
+4. was created by you        
+In order to prove it's really you, please add this random string into a PR comment: ` +
+          id,
         components: [
           {
             type: 1,
@@ -162,7 +168,7 @@ router.post('/', async (request, env) => {
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
             content:
-              "You're in!  You can now close this modal and wait for your invite.",
+              "You're in! Enjoy your shiny new badge and keep the performance up.",
             flags: InteractionResponseFlags.EPHEMERAL,
           },
         });

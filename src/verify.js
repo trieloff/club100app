@@ -25,22 +25,26 @@ export async function verify(
           headers: {
             // Authorization: `token ${github_token}`,
             Accept: 'application/vnd.github.v3+json',
+            'User-Agent':
+              'helix-club-bot https://github.com/trieloff/club100app',
           },
         },
       );
-
+      console.log('PR data fetched, checking for errors');
       if (!prResponse.ok) {
         console.error(
           'Unable to fetch PR data from GitHub.',
           prResponse.url,
           prResponse.status,
-          await prResponse.json(),
+          await prResponse.text(),
         );
         return onreject(
           'I do not have access to that PR and can only verify PRs in public repos. 🔑',
         );
       }
+      console.log('PR data fetched');
       const prData = await prResponse.json();
+      console.log('PR data', prData);
 
       const prAuthorId = prData.user.id;
       if (!prData.merged) {
@@ -53,6 +57,8 @@ export async function verify(
             headers: {
               // Authorization: `token ${github_token}`,
               Accept: 'application/vnd.github.v3+json',
+              'User-Agent':
+                'helix-club-bot https://github.com/trieloff/club100app',
             },
           },
         );
@@ -102,7 +108,8 @@ export async function verify(
       }
     } catch (err) {
       console.error(err);
-      return onerror('An error occurred while checking your PR. 😭');
+
+      return onerror('An unknown error occurred while checking your PR. 😭');
     }
   }
 }
